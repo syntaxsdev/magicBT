@@ -3,6 +3,11 @@ from twelvedata.time_series import TimeSeries
 from datetime import datetime as dt
 import time
 
+"""
+This service class will eventually be redone, I've reused it for some time.
+I coded this over a year ago (late 2021) and it's very bulky. Can be improved and has been noted.
+
+"""
 class SafeQueueService:
     """
     Keeps track of the queue and removes queues items after 60 seconds (safe aspect)
