@@ -1,5 +1,9 @@
 # magicBT
 
+## Disclaimer
+DO NOT USE.
+This is by no means PROD ready. This is not complete and neither is documentation. If you find this before this is complete, refrain from using it beyond testing at this point.
+
 ### What is it?
 magicBT is an equity backtester for both stocks and crypto. It provides as close as real time simulation, allowing you to tweak the very intervals to your liking.
 
