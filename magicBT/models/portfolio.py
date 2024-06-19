@@ -1,5 +1,5 @@
-from magicBT.models import BConfig, Trade, Handle, TimeSeries
-from pydantic import BaseModel
+from .BacktestModel import Trade, TimeSeries
+from pydantic import BaseModel, ConfigDict
 from typing import Union, List, Dict, Optional
 from uuid import uuid4
 from numpy import float32
@@ -89,10 +89,9 @@ class Portfolio:
                     if trade.closed and trade.closed_at < trade.bought_at]}
     
 class CallableInput(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     portfolio: Portfolio
     stock: str
     TS: Dict[str, TimeSeries]
     auto_tune: Optional[float] = None
-
-    class Config(BConfig):
-        ...

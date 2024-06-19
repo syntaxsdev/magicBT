@@ -1,10 +1,9 @@
 from magicBT.enums import Side, Indicator
 
 from typing import Union, List, Optional, Dict, Any
-from pydantic import BaseModel, BaseConfig, validator
+from pydantic import BaseModel, ConfigDict
+from pydantic.functional_validators import field_validator
 import numpy as np
-from numba import njit
-
 
 def convert_to_float32(cls, v):
     return np.float32(v)
@@ -13,31 +12,25 @@ def convert_to_int32(cls, v):
     return np.int32(v)
 
 def convert_to_strn(cls, v):
-    return np.string_(v)
+    return np.bytes_(v)
 
 
-def convert_to_bool8(cls, v):
-    return np.bool8(v)
-
-class BConfig:
-    arbitrary_types_allowed = True
+def convert_to_bool(cls, v):
+    return np.bool(v)
 
 class AccountModel(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     initial_balance: np.float32
     balance: np.float32
     total_trades: Optional[np.int32]
 
-    _validate_float = validator(
+    _validate_float = field_validator(
             'initial_balance', 'balance',
-            allow_reuse=True,
-            pre=True)(convert_to_float32)
+            mode="before")(convert_to_float32)
         
-    _validate_int = validator(
+    _validate_int = field_validator(
         'total_trades',
-        allow_reuse=True,
-        pre=True)(convert_to_int32)
-    
-    class Config(BConfig): ...
+        mode="before")(convert_to_int32)
 
 
 class Trade(BaseModel):
@@ -47,17 +40,15 @@ class Trade(BaseModel):
     bought_at: np.float32
     cost_basis: Optional[np.float32]
     closed_at: Optional[np.float32]
-    closed: np.bool8 = 0
+    closed: np.bool = 0
 
-    _validate_float = validator(
+    _validate_float = field_validator(
             'qty', 'cost_basis', 'closed_at', 'bought_at',
-            allow_reuse=True,
-            pre=True)(convert_to_float32)
+            mode="before")(convert_to_float32)
         
-    _validate_int = validator(
+    _validate_int = field_validator(
         'closed',
-        allow_reuse=True,
-        pre=True)(convert_to_bool8)
+        mode="before")(convert_to_bool)
     
 
     def close(self, close_price: Union[float, np.float32]):
@@ -79,7 +70,7 @@ class Trade(BaseModel):
         return ValueError("Could not add to this trade because it is the same stock.")
 
         
-    class Config(BConfig): ...
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class StrategyMeasurement(BaseModel):
@@ -132,20 +123,19 @@ class SingleSeries(BaseModel):
         return hash((self.datetime, self.open, self.high, self.low, self.close, self.volume))
 
     
-    _validate_float = validator(
+    _validate_float = field_validator(
         'open', 'high', 'low', 'close', #'ma_1', 'ma_2', 'ma_3', 'ma_4', 'ma_5', 'ma_6',
-        pre=True)(convert_to_float32)
+        mode="before")(convert_to_float32)
     
-    _validate_int = validator(
+    _validate_int = field_validator(
         'volume',
-        pre=True)(convert_to_int32)
+        mode="before")(convert_to_int32)
     
-    @validator('datetime', pre=True)
+    @field_validator('datetime', mode="before")
     def convert_to_datetime64(cls, v):
         return np.datetime64(v)
 
-    class Config(BConfig):
-        extra = "allow"
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
 
 class TimeSeries(BaseModel):
@@ -156,7 +146,7 @@ class TimeSeries(BaseModel):
     
     def extend(self, obj: object) -> int:
         self.series.extend([
-            SingleSeries.parse_obj(o) if not type(o) == SingleSeries 
+            SingleSeries.model_validate(o) if not type(o) == SingleSeries 
             else o
             for o in obj])
 
@@ -168,9 +158,7 @@ class TimeSeries(BaseModel):
     def sort(self):
         self.series = sorted(self.series, key=lambda x: x.datetime)
 
-
 class IndicatorData(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     indicator: Indicator
     data: dict
-
-    class Config(BConfig): ...

@@ -1,10 +1,10 @@
 from magicBT.broker.base import DataBroker
-from magicBT.models.SeriesModel import *
+from magicBT.models.SeriesModel import IndicatorData, TimeSeries
 from .QueueService import SafeQueueService
 
 from twelvedata import TDClient
-from typing import Union
-from datetime import datetime, timedelta
+from typing import Union, Optional
+from datetime import datetime
 import threading
 
 
@@ -16,7 +16,7 @@ class TDBroker(DataBroker):
         self.timezone = "America/New_York"
         self.SQS = SafeQueueService(credits)
 
-    def get(self, stock: str, interval: str, indicators: Optional[List[IndicatorData]] = None, **kwargs):
+    def get(self, stock: str, interval: str, indicators: Optional[list[IndicatorData]] = None, **kwargs):
         ts_build = self.TDC.time_series(
             symbol=stock,
             interval=interval,
@@ -42,7 +42,7 @@ class TDBroker(DataBroker):
         )
     
     def gather_backtest(self, stock: str, start_time: Union[datetime, str], 
-                        interval: str, indicators: Optional[Union[str, List[IndicatorData]]] = None) -> TimeSeries:
+                        interval: str, indicators: Optional[Union[str, list[IndicatorData]]] = None) -> TimeSeries:
         
         if indicators and type(indicators) == str:
             indicators = [indicators]

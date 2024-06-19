@@ -1,13 +1,12 @@
-from magicBT.models import *
+from magicBT.models import AccountModel, TimeSeries, IndicatorData, StrategyMeasurement, Portfolio, CallableInput
 from magicBT.broker import TDBroker
 from magicBT.enums import Indicator
 
-from pydantic import BaseModel
-from typing import Union, Callable, List, Dict, Tuple
-from functools import wraps
+from typing import Union, Callable, List, Dict, Tuple, Optional
 
 from datetime import datetime
-import random, threading
+import random
+import threading
 
 class Backtestable:
     """

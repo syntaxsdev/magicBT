@@ -1,8 +1,8 @@
 from magicBT.enums import Indicator
 
-from pydantic import BaseModel, BaseConfig, validator, Field
-from numba import njit
-from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
+from pydantic.functional_validators import field_validator
+from typing import Dict, Any
 import numpy as np
 
 
@@ -61,15 +61,15 @@ class SingleSeries(BaseModel):
         return hash((self.datetime, self.open, self.high, self.low, self.close, self.volume))
 
     
-    _validate_float = validator(
+    _validate_float = field_validator(
         'open', 'high', 'low', 'close', #'ma_1', 'ma_2', 'ma_3', 'ma_4', 'ma_5', 'ma_6',
-        pre=True)(convert_to_float32)
+        mode="before")(convert_to_float32)
     
-    _validate_int = validator(
+    _validate_int = field_validator(
         'volume',
-        pre=True)(convert_to_int32)
+        mode="before")(convert_to_int32)
     
-    @validator('datetime', pre=True)
+    @field_validator('datetime', mode="before")
     def convert_to_datetime64(cls, v):
         return np.datetime64(v)
 
