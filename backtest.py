@@ -7,7 +7,6 @@ from typing import Union, Callable, List, Dict, Tuple
 from functools import wraps
 
 from datetime import datetime
-from numba import njit
 import random, threading
 
 class Backtestable:
@@ -80,8 +79,6 @@ class Backtestable:
                 port=empty_port
             )
         return smList
-
-
 
 
 class Backtest:
