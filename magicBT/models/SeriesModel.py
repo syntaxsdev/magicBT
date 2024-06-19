@@ -1,14 +1,10 @@
 from magicBT.enums import Indicator
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from pydantic.functional_validators import field_validator
 from typing import Dict, Any
 import numpy as np
 
-
-class DConfig:
-    arbitrary_types_allowed = True
-    allow_mutation = False
 
 def convert_to_float32(cls, v):
     return np.float32(v)
@@ -73,8 +69,7 @@ class SingleSeries(BaseModel):
     def convert_to_datetime64(cls, v):
         return np.datetime64(v)
 
-    class Config(DConfig):
-        extra = "allow"
+    model_config = ConfigDict(extra="allow", arbitrary_types_allowed=True, frozen=False)
 
 
 class TimeSeries(BaseModel):
