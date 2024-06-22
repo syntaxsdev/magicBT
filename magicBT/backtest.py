@@ -1,14 +1,19 @@
-from magicBT.models import AccountModel, TimeSeries, IndicatorData, StrategyMeasurement, Portfolio, CallableInput
+from magicBT.models import AccountModel, TimeSeries, IndicatorData, \
+    StrategyMeasurement, StrategyBacktest, MockStrategy
+from .portfolio import Portfolio, CallableInput
 from magicBT.broker import TDBroker
 from magicBT.enums import Indicator
 
-from typing import Union, Callable, List, Dict, Tuple, Optional
+from typing import Union, Callable, List, Dict, Tuple, Optional, Type
 
 from datetime import datetime
 import random
 import threading
+import inspect
 
 class Backtestable:
+    __DEFINED_METHODS = ["iteration", "stream", "__init__"]
+
     """
     A ready backtest object that can be ran using eitherna
     - a backtest function
@@ -44,6 +49,28 @@ class Backtestable:
             list_of_trades=port.trades
             )
 
+    def run_defined_strategy(self,
+                     strategy: MockStrategy, # Type means a Python Class
+                     stock: str, args: dict | None,
+                     logger: Callable | None,
+                     is_async: bool = True):
+        """Runs a backtest with a defined strategy class
+        """
+        sb: StrategyBacktest = StrategyBacktest(
+            stock=stock,
+            key=None,
+            logger=logger,
+            alloted=args['alloted']
+        )
+        if not all(hasattr(strategy, method) for method in self.__DEFINED_METHODS):
+            raise AttributeError("This strategy class does not have the needed functions to work with this method.")
+        
+        try:
+            strat: MockStrategy = strategy(sb)
+
+        except Exception as ex:
+            print(ex)
+        
     def run(self, 
         strategy: Callable[[CallableInput], Portfolio], 
         tune_ratio: Optional[Tuple[float, float]] = None,
@@ -101,7 +128,10 @@ class Backtest:
             data=data)
             )
         
-    def load_backtest(self, stock: str, intervals: List[str], start_time: Union[datetime, str]) -> Backtestable:
+    def load_backtest(self, stock: str, 
+                      intervals: List[str],
+                      start_time: Union[datetime, str],
+                      end_time: datetime | str | None = None) -> Backtestable:
         """
         Returns a class with the preconfigured backtest object ready with TimeSeries data
         :returns Backtestable

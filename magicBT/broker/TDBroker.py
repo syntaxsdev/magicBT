@@ -1,5 +1,5 @@
 from magicBT.broker.base import DataBroker
-from magicBT.models.SeriesModel import IndicatorData, TimeSeries
+from magicBT.models.series import IndicatorData, TimeSeries
 from .QueueService import SafeQueueService
 
 from twelvedata import TDClient

@@ -1,4 +1,4 @@
-from .BacktestModel import Trade, TimeSeries
+from .models.common import Trade, TimeSeries
 from pydantic import BaseModel, ConfigDict
 from typing import Union, List, Dict, Optional
 from uuid import uuid4

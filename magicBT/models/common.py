@@ -22,7 +22,7 @@ class AccountModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     initial_balance: np.float32
     balance: np.float32
-    total_trades: Optional[np.int32]
+    total_trades: Optional[np.int32] = 0
 
     _validate_float = field_validator(
             'initial_balance', 'balance',
