@@ -7,7 +7,7 @@ from numpy import float32
 
 class Portfolio:
     def __init__(self, balance: float):
-        self.orders: Dict[str, Trade] = {}
+        self.open_orders: Dict[str, Trade] = {}
         self.trades: List[Trade] = []
         self.init_balance: float = balance
         self.balance: float = balance
@@ -17,15 +17,15 @@ class Portfolio:
         Closes all positions
         """
         self.trades.append([
-            order.close(close_price) for key, order in self.orders.items()
+            order.close(close_price) for key, order in self.open_orders.items()
         ])
-        self.orders.clear()
+        self.open_orders.clear()
 
     def close(self, key: str, close_price: Union[float, float32]):
         """
         Closes a position from the order key
         """
-        order = self.orders[key]
+        order = self.open_orders[key]
         if not order:
             return KeyError("Order does not exist.")
         self.trades.append(order.close(close_price))
@@ -35,17 +35,17 @@ class Portfolio:
         Places an order on either side
         Adds to an existing order if it exists and adjusts the cost basis
         """
-        for key, _trade in self.orders.items():
+        for key, _trade in self.open_orders.items():
             if _trade.side == trade.side and _trade.symbol == trade.symbol:
                 # congregate order
-                self.orders[key] = (_trade + trade)
+                self.open_orders[key] = (_trade + trade)
                 return key
         key = str(uuid4())
-        self.orders[key] = trade
+        self.open_orders[key] = trade
         return key
 
     def get_order(self, key: str) -> Trade:
-        order: Trade = self.orders[key]
+        order: Trade = self.open_orders[key]
         if not order:
             return KeyError("Order does not exist.")
         return order
@@ -55,7 +55,7 @@ class Portfolio:
         Reduces a position by a percentage
         `key` can be used as the trade ID or the symbol.
         """
-        for _key, item in self.orders.items():
+        for _key, item in self.open_orders.items():
             if item.symbol == key or _key == key:
                 close_pos = Trade(
                     symbol = item.symbol,

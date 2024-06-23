@@ -2,6 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Callable
 from abc import abstractmethod
 
+from .common import Trade
+
 class StrategyOrder(BaseModel):
     symbol: str
     qty: int
@@ -20,30 +22,8 @@ class StrategyBacktest(BaseModel):
     stock: str
     key: str | None
     logger: Callable | None = None
-    alloted: int
+    args: dict | None = None
 
-
-class MockStrategy():
-    def __init__(self, init: StrategyBacktest):
-        ...
-    
-    @abstractmethod
-    async def stream(self, quote):
-        ...
-    
-    @abstractmethod
-    async def iteration(self, sii):
-        ...
-
-class MockLogger():
-    @abstractmethod
-    def backtest_log(message: str):
-        ...
-# class StrategyInitialization(BaseModel):
-#     model_config = ConfigDict(arbitrary_types_allowed=True)
-
-#     stock: Stock
-#     persistence: object
-#     iMB: object
-#     priv_key: str
-#     alloted: float
+class StrategyBacktestIteration(BaseModel):
+    intervals: list[type]
+    positions: list[Trade]

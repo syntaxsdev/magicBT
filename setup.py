@@ -7,6 +7,7 @@ setup(
   install_requires=[
       'pydantic>=2.7.4',
       'numpy>=2.0.0',
-      'twelvedata>=1.2.12'
+      'twelvedata>=1.2.12',
+      'influxdb==1.43.0'
       ]
 )

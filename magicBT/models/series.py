@@ -37,9 +37,9 @@ class SingleSeries(BaseModel):
     def move_extra_keys(self, data: dict):
         # Move all unexpected fields to indicator_fields
         for name in data.keys():
-            if name not in self.__fields__:
+            if name not in self.model_fields:
                 # Apply parse_extra_fields to each extra field
-                parsed_value = self.parse_extra_fields(self.__dict__[name])
+                parsed_value = self.parse_extra_fields(data[name])
                 self.indicator_fields[name] = parsed_value
                 delattr(self, name)
 

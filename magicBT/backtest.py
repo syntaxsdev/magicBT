@@ -50,23 +50,38 @@ class Backtestable:
             )
 
     def run_defined_strategy(self,
-                     strategy: MockStrategy, # Type means a Python Class
-                     stock: str, args: dict | None,
-                     logger: Callable | None,
+                     strategy: MockStrategy,
+                     stock: str,
+                     args: dict | None,
+                     logger: Callable | None = None,
+                     transformer: Callable | None = None,
                      is_async: bool = True):
-        """Runs a backtest with a defined strategy class
+        """
+        Runs a backtest with a more defined strategy class
+
+        Args:
+            `strategy` (MockStrategy): A mock strategy type that can be used as a starting class. Can use custom but must follow the format and includes those methods. Must accept parameter `StrategyBacktest`.
+            `stock` (str): The stock or ticker
+            `args` (dict or None): Additional arguments to go into the `strategy` via `StrategyBacktest.args` property.
+            `logger` (Callable or None): A function that can log. Must take in one argument for the log message.
+            `transformer` (Callable or None): A function that will transform the TimeSeries data, if needed.
+            `is_async` (bool): Whether or not the functions in `strategy` are async or not.
+
         """
         sb: StrategyBacktest = StrategyBacktest(
             stock=stock,
             key=None,
             logger=logger,
-            alloted=args['alloted']
+            args=args
         )
         if not all(hasattr(strategy, method) for method in self.__DEFINED_METHODS):
             raise AttributeError("This strategy class does not have the needed functions to work with this method.")
         
         try:
             strat: MockStrategy = strategy(sb)
+
+            for key, ts in self.timeseries.items():
+                print(key)
 
         except Exception as ex:
             print(ex)
