@@ -80,7 +80,7 @@ class TimeSeries(BaseModel):
     
     def extend(self, obj: object, sort: bool = False) -> int:
         self.series.extend([
-            SingleSeries.parse_obj(o) if not type(o) == SingleSeries 
+            SingleSeries.model_validate(o) if not type(o) == SingleSeries 
             else o
             for o in obj])
 
@@ -92,6 +92,20 @@ class TimeSeries(BaseModel):
 
     def sort(self):
         self.series = sorted(self.series, key=lambda x: x.datetime)
+
+    def chop_to_date(self, date: str):
+        """
+        Chops the series list to include only entries starting after the given date.
+
+        Args:
+            date (str): The cutoff date in ISO format (YYYY-MM-DD).
+
+        Returns:
+            None
+        """
+        cutoff = np.datetime64(date)
+        self.series = [entry for entry in self.series if entry.datetime > cutoff]
+
 
 
 class IndicatorData(BaseModel):

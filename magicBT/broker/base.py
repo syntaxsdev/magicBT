@@ -6,10 +6,8 @@ class DataBroker(ABC):
     MARKET_START_TIME = timedelta(hours=9, minutes=30)
     MARKET_END_TIME = timedelta(hours=16, minutes=0)
     MARKET_DAYS = set([0, 1, 2, 3, 4])
-
-    def __init__(self):
-        self.smm = 390
-        self.intervals: dict[str, int] = {
+    
+    intervals: dict[str, int] = {
             '1min': 1,
             '5min': 5,
             '10min': 10,
@@ -20,6 +18,9 @@ class DataBroker(ABC):
             '4hr': 360,
             '1d': 390
         }
+
+    def __init__(self):
+        self.smm = 390
         ...
 
     @abstractmethod
@@ -28,7 +29,7 @@ class DataBroker(ABC):
     
     def generate_end_dates(self, start_date: Union[datetime, str], interval: Union[str, int], max_output: int):
         if type(interval) == str:
-            interval = self.interval_to_int(interval)
+            interval = DataBroker.interval_to_int(interval)
 
         if type(start_date) == str:
             start_date = datetime.strptime(start_date, "%Y/%m/%d")
@@ -67,9 +68,7 @@ class DataBroker(ABC):
 
         return end_dates
 
-
-
-    
-    def interval_to_int(self, interval: str) -> int:
-        return self.intervals[interval]
+    @classmethod
+    def interval_to_int(cls, interval: str) -> int:
+        return cls.intervals[interval]
     

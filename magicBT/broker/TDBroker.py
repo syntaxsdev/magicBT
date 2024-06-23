@@ -44,11 +44,12 @@ class TDBroker(DataBroker):
     def gather_backtest(self, stock: str, start_time: Union[datetime, str], 
                         interval: str, indicators: Optional[Union[str, list[IndicatorData]]] = None) -> TimeSeries:
         
-        if indicators and type(indicators) == str:
+        if indicators and isinstance(indicators, str):
             indicators = [indicators]
 
-        if type(start_time) == str:
+        if isinstance(start_time, str):
             start_time = datetime.strptime(start_time, "%Y/%m/%d")
+            iso_format = start_time.isoformat()
 
         end_dates = super().generate_end_dates(
             start_date=start_time,
@@ -86,6 +87,7 @@ class TDBroker(DataBroker):
         for result in results:
             TS.extend(result)
         TS.sort()
+        TS.chop_to_date(iso_format)
         """
         write_log = [TS.extend(self.get(stock=stock, 
                     interval=interval, 
@@ -93,3 +95,5 @@ class TDBroker(DataBroker):
                     indicators=indicators)) for date in end_dates]
         """
         return TS
+    
+    

@@ -1,5 +1,5 @@
 from magicBT.models import AccountModel, TimeSeries, IndicatorData, \
-    StrategyMeasurement, StrategyBacktest, MockStrategy
+    StrategyMeasurement, StrategyBacktest, StrategyBacktestIteration, MockStrategy
 from .portfolio import Portfolio, CallableInput
 from magicBT.broker import TDBroker
 from magicBT.enums import Indicator
@@ -27,7 +27,41 @@ class Backtestable:
     def _rand_tune(self, tune_ratio: Tuple[int, int]):
          return random.uniform(tune_ratio[0], tune_ratio[1])
     
+    def _generate_simulation_timeframe(self, iteration_fnc: Callable, transformer: Callable | None = None):
+        sorted_keys = sorted(self.timeseries.keys(), key=lambda x: TDBroker.interval_to_int(x))
 
+        # Get iterators for each TimeSeries
+        iterators = {key: iter(ts.series) for key, ts in self.timeseries.items()}
+        
+        # Initialize the last available points
+        last_points = {key: next(iterators[key], None) for key in sorted_keys}
+        
+        # Initialize a variable to keep track of the next available points in each series
+        next_points = {key: next(iterators[key], None) for key in sorted_keys}
+
+        # Get the smallest timeframe to drive the simulation
+        smallest_key = sorted_keys[0]
+
+        while last_points[smallest_key] is not None:
+            current_point = last_points[smallest_key]
+
+            # Update the last available points for other timeframes if a new point is available at the current time or before
+            for key in sorted_keys[1:]:
+                # Check if the next point is ready to be processed
+                while next_points[key] and next_points[key].datetime <= current_point.datetime:
+                    last_points[key] = next_points[key]
+                    next_points[key] = next(iterators[key], None)
+
+            # Collect the points to pass into do_action
+            points_to_action = {key: last_points[key] for key in sorted_keys}
+            points_to_action[smallest_key] = current_point  # Update the smallest timeframe point
+
+            # Call the action with the current points
+            print(points_to_action)
+
+            # Move to the next point in the smallest timeframe
+            last_points[smallest_key] = next(iterators[smallest_key], None)
+            
     def _run_strategy(self, 
         strategy: Callable[[CallableInput], Portfolio], 
         port: Portfolio, 
@@ -80,8 +114,7 @@ class Backtestable:
         try:
             strat: MockStrategy = strategy(sb)
 
-            for key, ts in self.timeseries.items():
-                print(key)
+            self._generate_simulation_timeframe()
 
         except Exception as ex:
             print(ex)
