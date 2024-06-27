@@ -114,7 +114,7 @@ class Backtestable:
         try:
             strat: MockStrategy = strategy(sb)
 
-            self._generate_simulation_timeframe()
+            self._generate_simulation_timeframe(iteration_fnc=..., transofmer=transformer)
 
         except Exception as ex:
             print(ex)
